@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders — LUMIÈRE</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">LUM<span>IÈ</span>RE</a>
+    <div class="nav-links">
+      <a href="../index.html#products">Shop</a>
+      <a href="orders.html">My Orders</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-ghost" id="auth-btn" onclick="openAuthModal()">Sign In</button>
+    </div>
+  </nav>
+
+  <!-- ORDERS -->
+  <div class="orders-container">
+    <h1>My Orders</h1>
+    <div id="orders-list">
+      <div class="loading">Loading your orders…</div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal">
+      <h2 id="modal-title">Welcome back</h2>
+      <p id="modal-sub">Sign in to view your orders.</p>
+      <div class="auth-error" id="auth-error"></div>
+      <div class="form-group" id="name-group" style="display:none">
+        <label>Full Name</label>
+        <input type="text" id="auth-name" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="hello@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" />
+      </div>
+      <button class="btn-full" id="auth-submit" onclick="submitAuth()">Sign In</button>
+      <div class="modal-toggle">
+        <span id="toggle-text">Don't have an account?</span>
+        <a onclick="toggleAuthMode()">Sign Up</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    async function loadOrders() {
+      const list = document.getElementById('orders-list');
+      if (!sb) {
+        list.innerHTML = '<p class="loading">Sign in with Supabase configured to see orders.</p>';
+        return;
+      }
+      if (!currentUser) {
+        list.innerHTML = '<p class="loading">Please sign in to view your orders.</p>';
+        openAuthModal();
+        return;
+      }
+      const orders = await fetchUserOrders();
+      if (!orders.length) {
+        list.innerHTML = '<p class="loading">You have no orders yet. <a href="../index.html">Start shopping →</a></p>';
+        return;
+      }
+      list.innerHTML = orders.map(o => {
+        const items = Array.isArray(o.items)
+          ? o.items.map(i => `${i.name} ×${i.qty}`).join(', ')
+          : '—';
+        const date = new Date(o.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+        return `
+          <div class="order-card">
+            <div class="order-card-header">
+              <div>
+                <p class="order-id">Order #${o.id}</p>
+                <p style="font-size:0.78rem;color:var(--muted);margin-top:2px">${date}</p>
+              </div>
+              <span class="order-status status-${o.status}">${o.status}</span>
+            </div>
+            <p class="order-items">${items}</p>
+            <p class="order-total">₹${Number(o.total).toLocaleString('en-IN')}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('auth-modal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+
+    initSupabase();
+
+    // Wait for auth state before loading orders
+    if (sb) {
+      sb.auth.onAuthStateChange(() => loadOrders());
+    }
+    loadOrders();
+  </script>
+</body>
+</html>
