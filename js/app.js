@@ -1,7 +1,3 @@
-// ============================================================
-//  js/app.js  —  App initialisation
-// ============================================================
-
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -10,12 +6,12 @@ function showToast(msg) {
   t._timer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// Close auth modal when clicking backdrop
+
 document.getElementById('auth-modal').addEventListener('click', function (e) {
   if (e.target === this) this.classList.remove('open');
 });
 
-// Keyboard: Escape closes modal / cart
+
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     document.getElementById('auth-modal').classList.remove('open');
@@ -24,7 +20,7 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-// ── Setup helpers ───────────────────────────────────────────
+
 function isConfigured() {
   return (
     CONFIG.SUPABASE_URL && !CONFIG.SUPABASE_URL.includes('YOUR_PROJECT_ID') &&

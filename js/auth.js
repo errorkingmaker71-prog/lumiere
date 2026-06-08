@@ -1,6 +1,4 @@
-// ============================================================
-//  js/auth.js  —  Sign in / Sign up with Supabase Auth
-// ============================================================
+
 
 let authMode = 'signin';
 
@@ -57,13 +55,43 @@ async function submitAuth() {
   }
 
   if (result.error) {
-    errEl.textContent   = result.error.message;
+    
+    const msg = result.error.message || 'Authentication failed.';
+    if (msg === 'Failed to fetch') {
+      errEl.textContent = 'Unable to connect to Supabase.\n' +
+        '1) Check your network connection.\n' +
+        '2) Make sure you are running a local server (not file://).\n' +
+        '3) Confirm SUPABASE_URL and SUPABASE_ANON_KEY in js/config.js are correct.';
+    } else if (msg.toLowerCase().includes('invalid login credentials')) {
+      errEl.textContent = 'Invalid login credentials.\n' +
+        'If you just created an account, verify your email in the link sent to your inbox, then sign in again.';
+    } else {
+      errEl.textContent = msg;
+    }
+    errEl.style.whiteSpace = 'pre-wrap';
     errEl.style.display = 'block';
   } else {
-    closeAuthModal();
-    showToast(authMode === 'signin'
-      ? 'Welcome back!'
-      : 'Account created! Check your email to verify.');
+    if (authMode === 'signin') {
+      closeAuthModal();
+      showToast('Welcome back!');
+    } else {
+      
+      authMode = 'signin';
+      toggleAuthMode();
+      errEl.textContent = 'Account created successfully!\n' +
+        'Please check your email and verify your account before signing in.\n' +
+        'Then use the same credentials on the Sign In form.';
+      errEl.style.whiteSpace = 'pre-wrap';
+      errEl.style.color = '#0a7';
+      errEl.style.display = 'block';
+      showToast('Signup success. Verify your email and sign in.');
+
+      
+      if (result?.data?.session) {
+        closeAuthModal();
+        showToast('Account created and signed in!');
+      }
+    }
   }
 }
 

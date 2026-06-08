@@ -1,10 +1,8 @@
-// ============================================================
-//  js/cart.js  —  Cart state, storage, render
-// ============================================================
+
 
 let cart = JSON.parse(localStorage.getItem('lumiere_cart') || '[]');
 
-// ── Mutations ─────────────────────────────────────────────────
+
 function addToCart(product) {
   const existing = cart.find(i => i.id === product.id);
   if (existing) {
@@ -39,11 +37,11 @@ function persistCart() {
   renderCart();
 }
 
-// ── Computed ──────────────────────────────────────────────────
+
 function cartTotal()  { return cart.reduce((s, i) => s + i.price * i.qty, 0); }
 function cartCount()  { return cart.reduce((s, i) => s + i.qty, 0); }
 
-// ── Render ────────────────────────────────────────────────────
+
 function renderCart() {
   const count = cartCount();
   document.getElementById('cart-count').textContent = count;
@@ -85,7 +83,7 @@ function renderCart() {
   `).join('');
 }
 
-// ── Drawer toggle ─────────────────────────────────────────────
+
 function toggleCart() {
   document.getElementById('cart-drawer').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('open');
